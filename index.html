@@ -17,6 +17,20 @@
             height: 100vh;
             width: 100vw;
         }
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            font-size: 24px;
+            font-weight: bold;
+        }
         #selection-box {
             position: absolute;
             top: 20%;
@@ -98,6 +112,7 @@
     </style>
 </head>
 <body>
+    <div id="loading-screen">Загрузка...</div>
     <div id="map"></div>
     <div id="selection-box">
         <form id="region-form">
@@ -154,7 +169,7 @@
             dragging: false,
             boxZoom: false,
             keyboard: false,
-            touchZoom: false
+            touchZoom: false,
         });
 
         // Tile layer
@@ -162,14 +177,14 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Load GeoJSON files for districts, regions, and countries
         Promise.all([
             fetch('regions.geojson').then(res => res.json()),
             fetch('districts.geojson').then(res => res.json()),
             fetch('countries.geojson').then(res => res.json())
         ])
         .then(([regionsData, districtsData, countriesData]) => {
-            regionsGeoJson=regionsData
+            regionsGeoJson = regionsData;
+
             districtsGeoJson = L.geoJSON(districtsData, {
                 style: { color: '#000', weight: 0.5, fillOpacity: 0, fillColor: '#ffffff' },
                 interactive: true,
@@ -178,7 +193,7 @@
 
             // Add regions to a separate pane with z-index 650
             regionsGeoJsonMap = L.geoJSON(regionsData, {
-                style: { color: '#000', weight: 1.4, fillOpacity: 1, fillColor: '#eeeeee'},
+                style: { color: '#000', weight: 1.4, fillOpacity: 1, fillColor: '#eeeeee' },
                 interactive: false
             }).addTo(map);
 
@@ -187,10 +202,88 @@
                 interactive: false
             }).addTo(map);
 
-            // Enable start button
-            document.getElementById('start-button').disabled = false;
+            // Listen for map to complete loading
+            map.whenReady(() => {
+                document.getElementById('loading-screen').style.display = 'none'; // Remove loading screen
+                document.getElementById('start-button').disabled = false;        // Enable start button
+            });
         })
         .catch(error => console.error("Error loading GeoJSON data:", error));
+        // Function to adjust the UI based on the screen orientation
+        function adjustForOrientation() {
+            const isMobileOrTablet = window.innerWidth <= 1024;  // Check if the screen is small (mobile or tablet)
+
+            if (isMobileOrTablet) {
+                if (window.innerWidth > window.innerHeight) {  // Landscape mode
+                    // For landscape on mobile/tablet, keep default zoom and don't rescale UI
+                    map.setZoom(6.2); // Adjust zoom level for landscape mode on small screens
+                    resetUI(); // Reset the UI to default size
+                } else {  // Portrait mode
+                    // For portrait on mobile/tablet, increase zoom and scale UI
+                    map.setZoom(7);  // Adjust zoom level for portrait mode on small screens
+                    scaleUI(); // Increase the size of UI elements by 40%
+                }
+            } else {
+                // For laptops/desktops, keep default zoom and UI
+                map.setZoom(6.8);  // Default zoom level
+                resetUI();  // Reset UI elements to their default size
+            }
+        }
+
+        // Function to adjust the UI based on the screen orientation and screen size
+        function adjustForOrientation() {
+            const isMobileOrTablet = window.innerWidth <= 1024;  // Check if the screen is small (mobile or tablet)
+
+            // Center the selection box
+            document.getElementById('selection-box').style.left = '50%';  // Horizontally centered
+            document.getElementById('selection-box').style.top = '20%';   // Default vertical position
+
+            if (isMobileOrTablet) {
+                if (window.innerWidth > window.innerHeight) {  // Landscape mode
+                    // For landscape on mobile/tablet, keep default zoom and don't rescale UI
+                    map.setZoom(6.2); // Adjust zoom level for landscape mode on small screens
+                    resetUI(); // Reset the UI to default size
+                } else {  // Portrait mode
+                    // For portrait on mobile/tablet, increase zoom and scale UI
+                    map.setZoom(7);  // Adjust zoom level for portrait mode on small screens
+                    scaleUI(); // Increase the size of UI elements by 40%
+                }
+            } else {
+                // For laptops/desktops, keep default zoom and UI
+                map.setZoom(6.8);  // Default zoom level
+                resetUI();  // Reset UI elements to their default size
+            }
+        }
+
+        // Function to scale up the UI elements by 40% (for portrait on small screens)
+        function scaleUI() {
+            // Increase the size of selection box and text without scaling the box itself
+            document.querySelectorAll('#selection-box, #prompt-box, #message-box, #count-box').forEach(element => {
+                element.style.fontSize = '22px';  // Increase font size by 40%
+                element.style.padding = '28px';  // Increase padding by 40%
+            });
+        }
+
+        // Function to reset the UI elements to their default size (for landscape and desktop)
+        function resetUI() {
+            document.querySelectorAll('#selection-box').forEach(element => {
+                element.style.fontSize = '16px';  // Default font size
+                element.style.padding = '20px';  // Default padding
+            });
+            // Reset the font size and padding to default values
+            document.querySelectorAll('#prompt-box, #message-box, #count-box').forEach(element => {
+                element.style.fontSize = '16px';  // Default font size
+                element.style.padding = '10px';  // Default padding
+            });
+        }
+
+        // Call adjustForOrientation on window resize and orientation change events
+        window.addEventListener('resize', adjustForOrientation);
+        window.addEventListener('orientationchange', adjustForOrientation);
+
+        // Initialize adjustments on page load
+        adjustForOrientation();
+
 
         document.getElementById('whole-country').addEventListener('change', function () {
             const regionOptions = document.querySelectorAll('.region-option');
