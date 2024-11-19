@@ -147,9 +147,9 @@
             <button type="button" id="start-button">Пачаць квіз</button>
         </form>        
     </div>
-    <div id="prompt-box"></div>
+    <div id="prompt-box" style="display: none;"></div>
     <div id="message-box"></div>
-    <div id="count-box"></div>
+    <div id="count-box" style="display: none;"></div>
     <div id="endgame-box" style="display: none;">
         <h1>Квіз завершаны</h1>
         <div class="score"></div>
@@ -160,7 +160,7 @@
 
         // Initialize map
         map = L.map('map', {
-            center: [53.9, 27.5667], // Center of Belarus
+            center: [53.9, 27.99876], // Center of Belarus
             zoom: 6.8,
             zoomSnap: 0.1,
             zoomControl: false,
@@ -216,7 +216,7 @@
             if (isMobileOrTablet) {
                 if (window.innerWidth > window.innerHeight) {  // Landscape mode
                     // For landscape on mobile/tablet, keep default zoom and don't rescale UI
-                    map.setZoom(6.2); // Adjust zoom level for landscape mode on small screens
+                    map.setZoom(5.8); // Adjust zoom level for landscape mode on small screens
                     resetUI(); // Reset the UI to default size
                 } else {  // Portrait mode
                     // For portrait on mobile/tablet, increase zoom and scale UI
@@ -351,6 +351,9 @@
                 }
             });
 
+            document.getElementById('prompt-box').style.display = 'block';
+            document.getElementById('count-box').style.display = 'block';
+
             enableDistricts(selectedRegions, selectedDistricts);
 
             remainingDistricts = selectedDistricts.sort(() => Math.random() - 0.5);
@@ -385,7 +388,7 @@
                         }
                     });
                     filledInDistricts++;
-                    setTimeout(nextDistrict, 1500);
+                    setTimeout(nextDistrict, 2000);
                 }
             }
         }
@@ -442,7 +445,12 @@
             const messageBox = document.getElementById('message-box');
             messageBox.innerText = message;
             messageBox.style.opacity = 1;
-            setTimeout(() => { messageBox.style.opacity = 0; }, 3000);
+                if (messageBox.timeoutId) {
+                clearTimeout(messageBox.timeoutId);
+            }
+            messageBox.timeoutId = setTimeout(() => {
+                messageBox.style.opacity = 0;
+            }, 3000);
         }
     </script>
 </body>
