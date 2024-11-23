@@ -253,6 +253,9 @@
                 element.style.fontSize = '22px'; 
                 element.style.padding = '28px'; 
             });
+            document.querySelectorAll('#message-box').forEach(element => {
+                element.style.top = '105px'; 
+            });
         }
 
         function resetUI() {
@@ -263,6 +266,9 @@
             document.querySelectorAll('#prompt-box, #message-box, #count-box').forEach(element => {
                 element.style.fontSize = '16px';
                 element.style.padding = '10px'; 
+            });
+            document.querySelectorAll('#message-box').forEach(element => {
+                element.style.top = '60px'; 
             });
         }
 
