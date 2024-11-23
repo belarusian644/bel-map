@@ -4,4 +4,4 @@ https://belarusian644.github.io/Belarusian-map-quiz/
 
 All districts of Belarus map quiz. You can go through the whole country of through separate regions
 
-leaflet, open map tiles
+leaflet, map tiler
