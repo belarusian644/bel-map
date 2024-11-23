@@ -6,6 +6,9 @@
     <title>Belarus District Quiz</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.3.0/maptiler-sdk.umd.js"></script>
+    <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.3.0/maptiler-sdk.css" rel="stylesheet" />
+    <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v2.0.0/leaflet-maptilersdk.js"></script>
     <style>
         html, body {
             margin: 0;
@@ -158,30 +161,29 @@
     <script>
         let map, districtsGeoJson, regionsGeoJson, countriesGeoJson, targetDistrict, attempts, totalDistricts, remainingDistricts = [], filledInDistricts = 0, score = 0;
 
-        // Initialize map
         map = L.map('map', {
-            center: [53.9, 27.99876], // Center of Belarus
-            zoomSnap: 0.01,
-            zoomControl: false,
-            scrollWheelZoom: false,
-            doubleClickZoom: false,
-            dragging: false,
-            boxZoom: false,
-            keyboard: false,
-            touchZoom: false,
+            center: [53.9, 27.99876], 
+            zoomSnap: 0.05,                 
+            zoomControl: false,       
+            scrollWheelZoom: false,   
+            doubleClickZoom: false,   
+            dragging: false,          
+            boxZoom: false,           
+            keyboard: false,          
+            touchZoom: false         
         });
-        
+
+        L.maptilerLayer({
+            apiKey: "Iz9E87cPdm931aRjEZkq", 
+            style: "https://api.maptiler.com/maps/ea221700-ab7f-4d6e-86a9-2bdcc0aa8ece/style.json",
+        }).addTo(map)
+    
         map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);
 
-        // Tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
         Promise.all([
-            fetch('regions.geojson').then(res => res.json()),
-            fetch('districts.geojson').then(res => res.json()),
-            fetch('countries.geojson').then(res => res.json())
+            fetch('./GeoJSON data/regions.geojson').then(res => res.json()),
+            fetch('./GeoJSON data/districts.geojson').then(res => res.json()),
+            fetch('./GeoJSON data/countries.geojson').then(res => res.json())
         ])
         .then(([regionsData, districtsData, countriesData]) => {
             regionsGeoJson = regionsData;
@@ -192,7 +194,6 @@
                 onEachFeature: onEachDistrict
             }).addTo(map);
 
-            // Add regions to a separate pane with z-index 650
             regionsGeoJsonMap = L.geoJSON(regionsData, {
                 style: { color: '#000', weight: 1.4, fillOpacity: 1, fillColor: '#eeeeee' },
                 interactive: false
@@ -203,88 +204,72 @@
                 interactive: false
             }).addTo(map);
 
-            // Listen for map to complete loading
             map.whenReady(() => {
-                document.getElementById('loading-screen').style.display = 'none'; // Remove loading screen
-                document.getElementById('start-button').disabled = false;        // Enable start button
+                document.getElementById('loading-screen').style.display = 'none'; 
+                document.getElementById('start-button').disabled = false;       
             });
         })
         .catch(error => console.error("Error loading GeoJSON data:", error));
-        // Function to adjust the UI based on the screen orientation
+
         function adjustForOrientation() {
-            const isMobileOrTablet = window.innerWidth <= 1024;  // Check if the screen is small (mobile or tablet)
+            const isMobileOrTablet = window.innerWidth <= 1024;  
 
             if (isMobileOrTablet) {
-                if (window.innerWidth > window.innerHeight) {  // Landscape mode
-                    // For landscape on mobile/tablet, keep default zoom and don't rescale UI
-                    map.setZoom(5.8); // Adjust zoom level for landscape mode on small screens
-                    resetUI(); // Reset the UI to default size
-                } else {  // Portrait mode
-                    // For portrait on mobile/tablet, increase zoom and scale UI
-                    map.setZoom(7);  // Adjust zoom level for portrait mode on small screens
-                    scaleUI(); // Increase the size of UI elements by 40%
+                if (window.innerWidth > window.innerHeight) {  
+                    map.fitBounds([[51.08, 22.63], [56.97, 33.22]]); 
+                    resetUI(); 
+                } else {  
+                    map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);  
+                    scaleUI();
                 }
             } else {
-                // For laptops/desktops, keep default zoom and UI
-                map.setZoom(6.8);  // Default zoom level
-                resetUI();  // Reset UI elements to their default size
+                map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);  
+                resetUI();  
             }
         }
 
-        // Function to adjust the UI based on the screen orientation and screen size
         function adjustForOrientation() {
-            const isMobileOrTablet = window.innerWidth <= 1024;  // Check if the screen is small (mobile or tablet)
+            const isMobileOrTablet = window.innerWidth <= 1024; 
 
-            // Center the selection box
-            document.getElementById('selection-box').style.left = '50%';  // Horizontally centered
-            document.getElementById('selection-box').style.top = '20%';   // Default vertical position
+            document.getElementById('selection-box').style.left = '50%'; 
+            document.getElementById('selection-box').style.top = '20%'; 
 
             if (isMobileOrTablet) {
-                if (window.innerWidth > window.innerHeight) {  // Landscape mode
-                    // For landscape on mobile/tablet, keep default zoom and don't rescale UI
-                    map.fitBounds([[51.08, 22.63], [56.97, 33.22]]); // Adjust zoom level for landscape mode on small screens
-                    resetUI(); // Reset the UI to default size
-                } else {  // Portrait mode
-                    // For portrait on mobile/tablet, increase zoom and scale UI
-                    map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);  // Adjust zoom level for portrait mode on small screens
-                    scaleUI(); // Increase the size of UI elements by 40%
+                if (window.innerWidth > window.innerHeight) { 
+                    map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);
+                    resetUI();
+                } else {
+                    map.fitBounds([[51.08, 22.63], [56.97, 33.22]]); 
+                    scaleUI();
                 }
             } else {
-                // For laptops/desktops, keep default zoom and UI
-                map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);  // Default zoom level
-                resetUI();  // Reset UI elements to their default size
+                map.fitBounds([[51.08, 22.63], [56.97, 33.22]]); 
+                resetUI();
             }
         }
 
-        // Function to scale up the UI elements by 40% (for portrait on small screens)
         function scaleUI() {
-            // Increase the size of selection box and text without scaling the box itself
             document.querySelectorAll('#selection-box, #prompt-box, #message-box, #count-box').forEach(element => {
-                element.style.fontSize = '22px';  // Increase font size by 40%
-                element.style.padding = '28px';  // Increase padding by 40%
+                element.style.fontSize = '22px'; 
+                element.style.padding = '28px'; 
             });
         }
 
-        // Function to reset the UI elements to their default size (for landscape and desktop)
         function resetUI() {
             document.querySelectorAll('#selection-box').forEach(element => {
-                element.style.fontSize = '16px';  // Default font size
-                element.style.padding = '20px';  // Default padding
+                element.style.fontSize = '16px';
+                element.style.padding = '20px';
             });
-            // Reset the font size and padding to default values
             document.querySelectorAll('#prompt-box, #message-box, #count-box').forEach(element => {
-                element.style.fontSize = '16px';  // Default font size
-                element.style.padding = '10px';  // Default padding
+                element.style.fontSize = '16px';
+                element.style.padding = '10px'; 
             });
         }
 
-        // Call adjustForOrientation on window resize and orientation change events
         window.addEventListener('resize', adjustForOrientation);
         window.addEventListener('orientationchange', adjustForOrientation);
 
-        // Initialize adjustments on page load
         adjustForOrientation();
-
 
         document.getElementById('whole-country').addEventListener('change', function () {
             const regionOptions = document.querySelectorAll('.region-option');
@@ -321,24 +306,21 @@
         };
 
         function enableDistricts(selectedRegions, selectedDistricts) {
-            // Adjust opacity for selected regions and make them non-interactive
             regionsGeoJsonMap.eachLayer(layer => {
                 if (selectedRegions.includes(layer.feature.properties.name)) {
-                    layer.setStyle({ fillOpacity: 0 }); // Hide region
+                    layer.setStyle({ fillOpacity: 0 });
                 }
             });
 
-            // Enable visibility and interactivity for selected districts
             districtsGeoJson.eachLayer(layer => {
                 if (selectedDistricts.includes(layer.feature.properties.name)) {
-                    layer.setStyle({ fillOpacity: 1, fillColor: '#ffffff' }); // Show district                  
+                    layer.setStyle({ fillOpacity: 1, fillColor: '#ffffff' });                 
                 }
                 else {
                     layer.setInteractive(false);
                 }
             });
         }
-
 
         document.getElementById('start-button').addEventListener('click', () => {
             const selectedRegions = Array.from(document.querySelectorAll('#region-form input:checked')).map(input => input.value);
@@ -395,24 +377,20 @@
         }
 
         function blinkDistrict(layer) {
-            const totalDuration = 1200; // Total blinking duration in milliseconds
-            const totalBlinks = 3; // Total number of blinks
-            const intervalTime = totalDuration / (totalBlinks * 2); // Time for each blink phase (on or off)
+            const totalDuration = 1200;
+            const totalBlinks = 3;
+            const intervalTime = totalDuration / (totalBlinks * 2);
 
             let blinkCount = 0;
             const interval = setInterval(() => {
-                // Toggle opacity: even counts are full opacity, odd counts are dimmed
                 layer.setStyle({ fillOpacity: blinkCount % 2 ? 0.5 : 1, fillColor: '#f08080' });
                 blinkCount++;
-                if (blinkCount >= totalBlinks * 2) { // Total phases are twice the number of blinks
+                if (blinkCount >= totalBlinks * 2) {
                     clearInterval(interval);
-                    // Ensure the final state is fully opaque
                     layer.setStyle({ fillOpacity: 1, fillColor: '#f08080' });
                 }
             }, intervalTime);
         }
-
-
 
         function nextDistrict() {
             if (filledInDistricts < totalDistricts) {
@@ -436,7 +414,6 @@
 
             document.getElementById('restart-button').addEventListener('click', () => location.reload());
         }
-
 
         function updateCountBox() {
             document.getElementById('count-box').innerText = `Запоўнена: ${filledInDistricts} з ${totalDistricts}`;
