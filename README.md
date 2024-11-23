@@ -1,4 +1,4 @@
-https://belarusian644.github.io/Belarusian-map-quiz/
+https://belarusian644.github.io/bel-map
 
 Квіз па ўсіх раёнах Беларусі на мапе. Можна прайсці для ўсёй краіны або для асобных абласцей
 
