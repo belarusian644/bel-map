@@ -180,6 +180,7 @@
         }).addTo(map)
     
         map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);
+        map.setMaxBounds([[51.03, 22.58], [57.02, 33.27]]);
 
         Promise.all([
             fetch('./GeoJSON data/regions.geojson').then(res => res.json()),
@@ -213,23 +214,6 @@
         .catch(error => console.error("Error loading GeoJSON data:", error));
 
         function adjustForOrientation() {
-            const isMobileOrTablet = window.innerWidth <= 1024;  
-
-            if (isMobileOrTablet) {
-                if (window.innerWidth > window.innerHeight) {  
-                    map.fitBounds([[51.08, 22.63], [56.97, 33.22]]); 
-                    resetUI(); 
-                } else {  
-                    map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);  
-                    scaleUI();
-                }
-            } else {
-                map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);  
-                resetUI();  
-            }
-        }
-
-        function adjustForOrientation() {
             const isMobileOrTablet = window.innerWidth <= 1024; 
 
             document.getElementById('selection-box').style.left = '50%'; 
@@ -238,13 +222,16 @@
             if (isMobileOrTablet) {
                 if (window.innerWidth > window.innerHeight) { 
                     map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);
+                    map.setMaxBounds([[51.03, 22.58], [57.02, 33.27]]);
                     resetUI();
                 } else {
-                    map.fitBounds([[51.08, 22.63], [56.97, 33.22]]); 
+                    map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);
+                    map.setMaxBounds([[51.03, 22.58], [57.02, 33.27]]); 
                     scaleUI();
                 }
             } else {
-                map.fitBounds([[51.08, 22.63], [56.97, 33.22]]); 
+                map.fitBounds([[51.08, 22.63], [56.97, 33.22]]);
+                map.setMaxBounds([[51.03, 22.58], [57.02, 33.27]]); 
                 resetUI();
             }
         }
@@ -256,6 +243,10 @@
             });
             document.querySelectorAll('#message-box').forEach(element => {
                 element.style.top = '105px'; 
+            });
+            document.querySelectorAll('#selection-box').forEach(element => {
+                element.style.fontSize = '30px'; 
+                element.style.padding = '40px';
             });
         }
 
