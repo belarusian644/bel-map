@@ -334,12 +334,19 @@
             if (selectedRegions.includes("Уся краіна")) {
                 selectedRegions.splice(0, selectedRegions.length, ...regionsGeoJson.features.map(f => f.properties.name));
             }
+            if (selectedRegions.includes("Мінская вобласць")) {
+            selectedRegions.push("Мінск");
+            }
             const selectedDistricts = [];
             regionsGeoJson.features.forEach(region => {
-                if (selectedRegions.includes(region.properties.name)) {
+                if (
+                    selectedRegions.includes(region.properties.name) &&
+                    region.properties.name !== "Мінск"
+                ) {
                     selectedDistricts.push(...region.properties.districts);
                 }
             });
+
 
             document.getElementById('prompt-box').style.display = 'block';
             document.getElementById('count-box').style.display = 'block';
@@ -364,6 +371,7 @@
                 layer.setStyle({ fillColor, fillOpacity: 1 });
                 filledInDistricts++;
                 updateMessage('Правільна!');
+                layer.setInteractive(false);
                 updateCountBox();
                 setTimeout(nextDistrict, 1300);
             } else {
@@ -374,7 +382,8 @@
                     updateMessage(`Спроб няма! Ты выбраў: ${clickedDistrictName}`);
                     districtsGeoJson.eachLayer(l => {
                         if (l.feature.properties.name === targetDistrict) {
-                            blinkDistrict(l)
+                            blinkDistrict(l);
+                            l.setInteractive(false);
                         }
                     });
                     filledInDistricts++;
