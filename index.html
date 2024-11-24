@@ -159,7 +159,7 @@
         <button id="restart-button">Пачаць зноў</button>
     </div>
     <script>
-        let map, districtsGeoJson, regionsGeoJson, countriesGeoJson, targetDistrict, attempts, totalDistricts, remainingDistricts = [], filledInDistricts = 0, score = 0;
+        let map, districtsGeoJson, regionsGeoJson, targetDistrict, attempts, totalDistricts, remainingDistricts = [], filledInDistricts = 0, score = 0;
 
         map = L.map('map', {
             center: [53.9, 27.99876], 
@@ -185,24 +185,18 @@
         Promise.all([
             fetch('./GeoJSON data/regions.geojson').then(res => res.json()),
             fetch('./GeoJSON data/districts.geojson').then(res => res.json()),
-            fetch('./GeoJSON data/countries.geojson').then(res => res.json())
         ])
-        .then(([regionsData, districtsData, countriesData]) => {
+        .then(([regionsData, districtsData]) => {
             regionsGeoJson = regionsData;
 
             districtsGeoJson = L.geoJSON(districtsData, {
                 style: { color: '#000', weight: 0.5, fillOpacity: 0, fillColor: '#ffffff' },
-                interactive: true,
+                interactive: false,
                 onEachFeature: onEachDistrict
             }).addTo(map);
 
             regionsGeoJsonMap = L.geoJSON(regionsData, {
                 style: { color: '#000', weight: 1.4, fillOpacity: 1, fillColor: '#eeeeee' },
-                interactive: false
-            }).addTo(map);
-
-            countriesGeoJson = L.geoJSON(countriesData, {
-                style: { color: '#000', weight: 2, fillOpacity: 1, fillColor: '#ccc' },
                 interactive: false
             }).addTo(map);
 
@@ -312,7 +306,8 @@
 
             districtsGeoJson.eachLayer(layer => {
                 if (selectedDistricts.includes(layer.feature.properties.name)) {
-                    layer.setStyle({ fillOpacity: 1, fillColor: '#ffffff' });                 
+                    layer.setStyle({ fillOpacity: 1, fillColor: '#ffffff' }); 
+                    layer.setInteractive(true);                
                 }
                 else {
                     layer.setInteractive(false);
